@@ -44,6 +44,34 @@
           providers.onOutput(() => setOutput(providers.outputMap));
         }, []);
 
+        // Build a Date from the provider epoch time (output.date?.now).
+        // The provider may return seconds or milliseconds, so normalize to ms.
+        function getDateFromOutput(epoch) {
+          if (epoch == null) return new Date();
+          const n = Number(epoch);
+          const ms = n < 1e12 ? n * 1000 : n;
+          return new Date(ms);
+        }
+
+        // Format date with 24-hour time (HH:mm) and short date.
+        function formatDate24(date) {
+          const weekday = new Intl.DateTimeFormat(undefined, {
+            weekday: 'short',
+          }).format(date);
+          const day = new Intl.DateTimeFormat(undefined, {
+            day: 'numeric',
+          }).format(date);
+          const month = new Intl.DateTimeFormat(undefined, {
+            month: 'short',
+          }).format(date);
+          const timePart = new Intl.DateTimeFormat(undefined, {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+          }).format(date);
+          return `${weekday} ${day} ${month} ${timePart}`;
+        }
+
         // Get icon to show for current network status.
         function getNetworkIcon(networkOutput) {
           switch (networkOutput.defaultInterface?.type) {
@@ -142,7 +170,7 @@
               )}
             </div>
 
-            <div className="center">{output.date?.formatted}</div>
+            <div className="center">{formatDate24(output.date?.now)}</div>
 
             <div className="right">
               {output.glazewm && (
